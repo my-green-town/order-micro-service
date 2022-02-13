@@ -1,0 +1,12 @@
+{
+    "type": "service_account",
+    "project_id": "sinuous-branch-334611",
+    "private_key_id": "b682cc682b2c81b706611f84ed8253fe5d717a42",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDUasrRRXsfykrL\nk3UrO/i6IQ8jzM85nnkvoHsOAA7ZTKf0Iyc5XTan79FBGj0R3e7FOh+Gi4MzAYh/\nFTtSe3Cu7Ctcxwqp0eLEJ4Cf4fjennGkLawuAjGRVFJLMheVjas8AVkegymg3jWL\n0KmfH9B9UiAPrUXdn+Js0FSzml6OvDIERieo/WO+jfrWUNOi8I6a4suSwy/4sflK\niGPhX8ub6uzV/8Rqjd4H8SxIAQtq0O6GkuVl/rso7p6uFXZgekfq6qzlmCukQc1q\nwEJw3S83oPB89tFRi/bNwDEZtRLRYcQ5uzYOWrmD7U0s8/QljYvAARFWDIGvTyYY\nG5vBk+ABAgMBAAECggEAGTlT5kU67rZ7P/C9vCmTSqmm/kL8Oe+18lA7Qe6t1Liu\nmmYblUtFX0Hcy79NkIlAfk59nzYtQ+mjB3xCSXQmbbnWbbOmci4IoJm+7hLLwRvN\ni4fE53MT5xm9P/gDJvDmFupjZnqAKf3ZG/DmWOKn7l8fNt1bljVokjABruYzjlKr\n2lx9z8wy+7i91nuG0141mM0IJ7kQ1lTS6bIS7iuyx0sjAnRbD1VUjqohfSSyiSKl\naGzz+kPzvqw+SvdfDlFBoU8OZGVU1OyDfZtS4HePrOhi7gm1s2/qrsl3d1N2mM91\nH6H+utwrastMoAuGqbIr7KoAuu+drMiuh5ay02R9RQKBgQD9yZXsk3r0lHOVEShN\n06Qw7JSCaoT8KLqAFYq+gDQUQVILyUI78qP5yZI3wTvwT65ED7mjcl0geaBm6/Bs\n00g6jqO/OJV7itF5kw7eMNHXrg7VzQogx506w2xtJHrF8kH4uH4J/6hYItHzUdiJ\nhXqSm2RbJhdedamVwQzVv8edTwKBgQDWRN/hB6Y9//7eMQJSSeWaYgBnHFazo+ui\nWkAVll/NOra3Q71ic7ZQ11qec/3h3PrStuT0egrpbQXAT0Z9pfdWGD0R2z+A1789\nb+SxIfmNUPeic/JmZkl0fhGjXaOLgXLHwHhh1aYwa/i1r/zbDZvn3hk9Ps3Dm68g\nPzOJVat5rwKBgHnwXuHh5sUXgwWPzd6/HvgG5EBZb/Y8l4etUhHARcWpsQNKu1FU\nf2coa+HwLZ2Em4XGTHr1GzvcVK6/FLElP2IrYRAi3ugSRh31A8LMkDbiQeyGbSRc\n5PX0KeezDG6JvRsFgkHJnhhi+p+/ppxFDyTcFvcYsUfInyf+Lu2RDRdPAoGBANUW\nue95RAL0y+r8ompjw0u9mtjwfek5Y+WaC5FscuoPMhcf7wAyQ2YyRZS/lgVBVtCn\nwxq/JIrwOX//VwMuQsQEZveTK5xe83mOBcmDGENJ+nw9AxyDLRoFJlVpknPy0MuG\nxjHF3/jX6AgIdVcEOcBmSIN4KfoWohtXv1EdOeNRAoGBAJbjsOWDvv0/q/OoEwXy\nyw77lwJq3utgvXDEkodTkn5IEaDAJSBPjauQnv70JPyqe3ToKEnKuXZw0j8SwmRR\nB22xUs+lr1fj+IksZzaKAfDzGl9cr0GvfkOCd/AzlGgfzdnlK1A7Q//ZlMOTU6Jw\nbHSHWPw/2NLvrLCA/cgLCyUd\n-----END PRIVATE KEY-----\n",
+    "client_email": "bucket-service@sinuous-branch-334611.iam.gserviceaccount.com",
+    "client_id": "107331008059015592009",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bucket-service%40sinuous-branch-334611.iam.gserviceaccount.com"
+  }
