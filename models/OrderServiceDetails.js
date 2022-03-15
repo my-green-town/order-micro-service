@@ -3,7 +3,7 @@ const {
     Model
 } = require('sequelize');
 module.exports = (sequelize, Sequelize) => {
-    class OrderServices extends Model {
+    class OrderServiceDetails extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -11,26 +11,18 @@ module.exports = (sequelize, Sequelize) => {
          */
         static associate(models) {
             //define your association here
-            OrderServices.belongsTo(models.Orders, {foreignKey:'orderId'});
-            OrderServices.hasMany(models.OrderServiceDetails,{foreignKey:"serviceId",as:"serviceDetail"});
-            OrderServices.hasMany(models.OrderParticulars,{foreignKey:'serviceId',as:"particulars"});
-            OrderServices.hasMany(models.OrderQuantities,{foreignKey:'serviceId',as:"orderQuantities"});
-            
+            OrderServiceDetails.belongsTo(models.Orders, { foreignKey: 'orderId' });
+            OrderServiceDetails.belongsTo(models.OrderServices, { foreignKey: 'serviceId' });
+            OrderServiceDetails.hasMany(models.OrderParticulars,{foreignKey:'serviceDetailId'});
         }
     };
-    OrderServices.init({
+    OrderServiceDetails.init({
         id: {
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
             type: Sequelize.INTEGER
         },
-        /**
-         * primary key of merchant-services table
-         */
-        // merchantServiceId: {
-        //     type: Sequelize.INTEGER
-        // },
         orderId: {
             type: Sequelize.INTEGER,
             references: {
@@ -40,28 +32,22 @@ module.exports = (sequelize, Sequelize) => {
             onDelete: 'cascade',
             onUpdate: 'cascade'
         },
-        cartId: { type: Sequelize.INTEGER },
-
         /**
-         * data copy of merhant service table
-         */
-        name: { type: Sequelize.STRING },
-        unit: { type: Sequelize.STRING },
-        tat: { type: Sequelize.STRING },
-        available: { type: Sequelize.BOOLEAN },
-        hasParticulars: {
-            type: Sequelize.BOOLEAN
-        },
-        createdAt: {
-            allowNull: false,
-            type: Sequelize.DATE,
-            defaultValue: new Date()
-        },
-        merchantId: {
+         * serviceId refers to orderService primary key
+        */
+        serviceId: {
             type: Sequelize.INTEGER,
+            references: {
+                model: 'OrderServiceDetails', // 'Movies' would also work
+                key: 'id'
+            },
             onDelete: 'cascade',
             onUpdate: 'cascade'
-        },
+        }, //(debit | credit)
+        cloth: { type: Sequelize.STRING }, //shirt, pant, jeans
+        unit: { type: Sequelize.STRING }, //kg, peice
+        price: { type: Sequelize.INTEGER }, //(card|account)
+        discount: { type: Sequelize.INTEGER, defaultValue: 0 },
         createdAt: {
             allowNull: false,
             type: Sequelize.DATE,
@@ -75,7 +61,7 @@ module.exports = (sequelize, Sequelize) => {
     },
         {
             sequelize,
-            modelName: 'OrderServices',
+            modelName: 'OrderServiceDetails',
         });
-    return OrderServices;
+    return OrderServiceDetails;
 };

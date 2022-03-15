@@ -3,35 +3,31 @@ const {
     Model
 } = require('sequelize');
 module.exports = (sequelize, Sequelize) => {
-    class Orders extends Model {
+    class DeliveredOrders extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // define association here
-            Orders.hasMany(models.DeliveredOrders,{foreignKey:'orderId'});
-            Orders.hasMany(models.OrderServices,{foreignKey:'orderId'});
-
+            //define your association here
+            DeliveredOrders.belongsTo(models.Orders,{foreignKey:'orderId'});
         }
     };
-    Orders.init({
+    DeliveredOrders.init({
         id: {
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
             type: Sequelize.INTEGER
         },
-        status: { type: Sequelize.STRING },
-        expectedPickupTime: { type: Sequelize.STRING },
-        actulaPickupTime: { type: Sequelize.STRING },
-        expectedDeliveryTime: { type: Sequelize.STRING },
-        actualDeliveryTime: { type: Sequelize.STRING },
-        paymentStatus: { type: Sequelize.BOOLEAN },
-        merchantName: { type: Sequelize.STRING },
-        userId: { type: Sequelize.INTEGER },
-        cartId: { type: Sequelize.INTEGER },
+        orderId: { type: Sequelize.STRING },
+        shipmentId: { type: Sequelize.INTEGER },
+        wishmasterId: { type: Sequelize.INTEGER },
+        wishmasterName: { type: Sequelize.STRING },
+        deliveryTime: { type: Sequelize.INTEGER },
+        distance: { type: Sequelize.INTEGER },
+        paymentId:{ type: Sequelize.INTEGER },
         createdAt: {
             allowNull: false,
             type: Sequelize.DATE
@@ -40,11 +36,10 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false,
             type: Sequelize.DATE
         }
-
     },
         {
             sequelize,
-            modelName: 'Orders',
+            modelName: 'DeliveredOrders',
         });
-    return Orders;
+    return DeliveredOrders;
 };

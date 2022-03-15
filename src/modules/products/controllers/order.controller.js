@@ -11,10 +11,13 @@
  const db = require("../../../../models");
  const {Sequelize} = db.Sequelize;
  const { Op } = Sequelize;
- const {Orders, OrderDetails, OrderServices, OrderShipment} = db;
+ const {Orders, OrderDetails, OrderServices, OrderShipment,OrderServiceDetails} = db;
+ const {OrderParticulars,OrderQuantities} = db
 
  const axiosObj = require('../services/axios');
-const { Query } = require('mongoose');
+ const { Query } = require('mongoose');
+ const OrderUpdateSerivice = require('../services/orderUpdates');
+ const OrderService = require('../services/order');
 
 let test =(req, res)=>{
     res.send("test called in Cart, thanks for calling");
@@ -24,12 +27,12 @@ let createNewOrder = async (req, res, next)=>{
     let getCart = async ()=>{
         axiosObj.setConfig({app:'cart',token:req.token});
         try{
-            return await axiosObj.getRequest('/cart/getDetails');
+            return await axiosObj.getRequest('/cart/');
         }catch(err){
             throw new Error(err);
         }           
     }
-    let createOrder = async (cart)=>{
+    let createOrder = async (cart) => {
         let {userId} = req.userInfo;
         let order = {
             cartId: cart.data[0].service.cartId,
@@ -49,26 +52,33 @@ let createNewOrder = async (req, res, next)=>{
     let addServicesToOrder = async (cart,order)=>{
         console.log("order",cart);
         for(let i=0;i<cart.length;i++){
-            let eachService = cart[i];
-
-            let service = {
-                orderId:order.id,
-                cartId: cart[0].service.cartId,
-                serviceId:eachService.service.serviceId,
-                serviceName:eachService.detail.name,
-                servicePrice:eachService.detail.price,
-                serviceTat:eachService.detail.tat,
-                serviceUnit:eachService.detail.unit
-            }
-            console.log("service",service);
+            let eachService = cart[i].service;
+            let {serviceId} = eachService;
+            axiosObj.setConfig({app:'main',token:req.token});
+            let serviceRow = await axiosObj.getRequest('/merchant/service/details/'+serviceId);
+            console.log("service id",serviceRow.data);
+            let {MerchantServiceDetails,id,createdAt,updatedAt,...orderServiceRow} = serviceRow.data.payload;
+            orderServiceRow = {...orderServiceRow, orderId:order.id,cartId:cart[0].service.cartId};
+            
             try{
-                await OrderServices.create(service);
+                let orderServiceId = await OrderServices.create(orderServiceRow);
+                let servicDetailPromises = MerchantServiceDetails.map(element=>{
+                    let {id,createdAt,updatedAt,serviceId,...serviceDetailRow} = element;
+                    serviceDetailRow = {...serviceDetailRow,serviceId:orderServiceId.id}
+
+                    return OrderServiceDetails.create(serviceDetailRow);
+
+                });
+                await Promise.all(servicDetailPromises);
             }catch(err){
+                console.log("err is",err);
                 throw new Error(err);
             }
             
         }
     }
+
+
 
     let addOrderToQueue = async(order)=>{
         //pass the messga to order queue
@@ -177,7 +187,7 @@ let getAssignedOrder = async(req, res, next)=>{
 
 let getOptedServices = async(req, res, next)=>{
     let fetchServices = async ()=>{
-        const {orderId} = req.query;
+        const {orderId} = req.params;
         console.log("order is",orderId);
         let query = {
             where:{
@@ -196,10 +206,27 @@ let getOptedServices = async(req, res, next)=>{
     }
 }
 
+let getServiceAndParticulars = async(req, res)=>{
+    let {id} = req.params;
+    try{
+
+        let serviceRows = await OrderServices.findOne({
+            where:{id:id},
+            include:{model:OrderServiceDetails,as:"serviceDetail"}
+        });
+        let serviceParticulars = await OrderService.orderParticulars({serviceId:id});
+
+        res.json({payload:{services:serviceRows,particulars:serviceParticulars}});
+    }catch(err){
+        console.log("error is",err);
+    } 
+}
+
 let addOrderDetails = async (req, res, next)=>{
     //add in orderdetails table
 
-    const {serviceName,quantity, unit,orderId,cloth,serviceId} = req.body;
+    const {serviceName,quantity,unit,orderId,cloth,serviceId,clothServiceId} = req.body;
+    const {hasParticulars} = req.body;
 
     let addQuery = {
         orderId:orderId,
@@ -207,7 +234,9 @@ let addOrderDetails = async (req, res, next)=>{
         quantity:quantity,
         unit:unit,
         cloth:cloth,
-        serviceId:serviceId
+        serviceId:serviceId,
+        merchantServiceDetailId:clothServiceId,
+        hasParticulars:hasParticulars
     }
     try{
         let addRes = await OrderDetails.create(addQuery);
@@ -241,22 +270,17 @@ let updateOrderDetails = async (req, res, next) =>{
     }
 }
 
-let deleteOrderDetails = async (req, res, next) =>{
-    const {orderDetailId} = req.body;
-
-    let destroyQuery = {
-        where:{
-            id:orderDetailId
-        }
-    }
+let deleteOrderParticular = async (req, res, next) =>{
+    const {particularId} = req.body;
     try{
-        await OrderDetails.destroy(destroyQuery);
+        await OrderParticulars.update({deleted:true},{where:{id:particularId}});
         res.status(200).json({msg:"Service removed  successfully"});
     }catch(err){
         console.log("error is",err);
         next(err);
     }
 }
+
 let getOrderDetails = async(req, res, next)=>{
     const {orderId} = req.query;
     let query = {
@@ -275,23 +299,51 @@ let getOrderDetails = async(req, res, next)=>{
 
 }
 
-const getShipment = (req, res, next)=>{
+const getShipment = async (req, res, next) => {
+    const {orderId} = req.params;
+    try{
+        let shipmentRow = await OrderShipment.findOne({where:{orderId:orderId}});
+        res.json({shipment:shipmentRow});
 
+    }catch(err){
+        console.log("Error in getting the shipment details",err);
+    }
+    
 }
 
 const setDeliveryParnterAvailable = async  (req,status)=>{
     const { userId } = req.userInfo;
-    const {orderId} = req.body;
+    const { orderId} = req.body;
 
     const sendDeliveryAck = async ()=>{
         let order = await OrderShipment.findOne({where:{orderId:orderId}});
         axiosObj.setConfig({app:'msgQ',token:""});
+        
         return await axiosObj.postRequest('/ack',{deliveryTag:order.deliveryTag});
     }
 
+    const updateDeliveryCycle = async ()=>{
+        if(status == 'deliveryToShopDone'){
+            return OrderUpdateSerivice.updateDeliveryCycle({...req.userInfo, ...req.body});
+        }
+    }
+
     if(status == 'deliveryToShopDone') {
-        await sendDeliveryAck();
+        await Promise.all([sendDeliveryAck(),updateDeliveryCycle()])
         axiosObj.setConfig({app:'main',token:req.token});
+        let walletReq = {
+            amount:30,
+            userId:userId,
+            action:'add',
+            source:'swab Admin',
+            description:`Comission Order Id ~ ${orderId}`,
+            tokenCheck:false
+
+        }
+        let paymentDetails = await axiosObj.postRequest('/wallet/addToWallet',walletReq);
+        let {id} = paymentDetails.data.transaction;
+        console.log("tansc id",id);
+        await OrderUpdateSerivice.updateDeliveryPaymentId({orderId,id});
         return await axiosObj.putRequest('/auth/user',{userId:userId});
     }else{
         return Promise.resolve({"msg":"Time has not come to ack"});
@@ -360,12 +412,99 @@ const updateDeliveryTag = async (req, res, next)=>{
         console.log("err is ",err);
         next(err);
     }
-   
-
 }
 
+const deliveredOrder = async(req, res,next) => {
+    try{
+        let orders = await OrderService.getDeliveredOrder({...req.userInfo});
+        res.json({msg:"Orders", data:orders});
+    }catch(err){
+        console.log("Error in getting the delivered orders",err);
+        next(err);
+    }
+    
+}   
 
+const addOrderParticular = async (req, res, next) => {
+    
+    let particularRow = req.body;
+    try{
+        let createdRow = await OrderParticulars.create(particularRow);
+        let {serviceId} = particularRow;
+        let createdRowParticulars =await OrderService.singleParticlarRow({serviceId:serviceId,particularId:createdRow.id})
+        res.json({payload:createdRowParticulars});
+    }catch(err){
+        console.log("eror in creating the particular",err);
+        next(err);
+    }   
+}
+const getServiceParticulars = async (req, res, next)=>{
 
+    const {serviceId} = req.params;
+    let fetchParticulars = async ()=>{
+            return  OrderServices.findOne({
+                attributes:['id','name'],
+                where:{id:serviceId},
+                include:{model: OrderParticulars, as:"particulars",include:{model:OrderServiceDetails,as:"serviceDetail"}}
+            })
+    }
+    try{
+        let serviceWothParticulars = await fetchParticulars();
+        return res.json({payload:{data:serviceWothParticulars}});
+
+    }catch(err){
+        console.log("error is",err);
+        next(err);
+    }
+}
+
+const getParticularsInOrder = async (req, res,next)=>{
+    const {orderId} = req.params;
+    let fetchParticulars = async ()=>{
+        return await OrderServices.findAll({
+            where:{ 
+                orderId: orderId
+            },
+            include:{model:OrderParticulars,as:"particulars",include:{model:OrderServiceDetails,as:"serviceDetail"}}
+        })
+    }
+
+    try{
+        let rows = await fetchParticulars();
+        res.json({payload:rows,status:"success"}).status(200);
+    }catch(err){
+        console.log("error is",err);
+    }
+    
+}
+
+const insertOrderQuantity = async(req, res, next)=>{
+    let {serviceId, quantity} = req.body;
+   
+    
+    let row = {
+        serviceId:serviceId,
+        quantity:quantity
+    }
+    try{
+        let rowRes = await OrderQuantities.create(row);
+        return res.json({payload:rowRes.id,status:"success"}).status(200);
+    }catch(err){
+        console.log("error is",err);
+    }
+}
+
+const getOrderSummary = async (req, res, next)=>{
+
+    let {orderId} = req.params;
+    try{
+        let summary = await OrderService.getOrderSummary({orderId:orderId});
+        res.json({"payload":summary});
+    }catch(err){
+        console.log("error is",err);
+    }
+
+}
 
 module.exports = {
     test,
@@ -375,14 +514,21 @@ module.exports = {
     getOptedServices,
     addOrderDetails,
     updateOrderDetails,
-    deleteOrderDetails,
+    deleteOrderParticular,
     getOrderDetails,
     getShipment,
     addShipment,
     updateShipment,
     deleteShipment,
     fetchOrders,
-    updateDeliveryTag
+    updateDeliveryTag,
+    deliveredOrder,
+    getServiceAndParticulars,
+    addOrderParticular,
+    getServiceParticulars,
+    getParticularsInOrder,
+    insertOrderQuantity,
+    getOrderSummary
 
 }
 

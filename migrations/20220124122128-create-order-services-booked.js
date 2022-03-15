@@ -9,7 +9,14 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      orderId:{ type:Sequelize.INTEGER,
+      /**
+       * primary key of merchant-services table
+       */
+      merchantServiceId:{
+        type: Sequelize.INTEGER
+      },
+      orderId: {
+        type: Sequelize.INTEGER,
         references: {
           model: 'Orders',
           key: 'id'
@@ -17,16 +24,28 @@ module.exports = {
         onDelete: 'cascade',
         onUpdate: 'cascade'
       },
-      cartId : { type:Sequelize.INTEGER},
+      cartId: { type: Sequelize.INTEGER },
 
       /**
        * data copy of merhant service table
        */
-      serviceId:  {type:Sequelize.INTEGER},
-      serviceName: {type:Sequelize.STRING},
-      servicePrice: {type:Sequelize.INTEGER},
-      serviceUnit: {type:Sequelize.STRING},
-      serviceTat: {type:Sequelize.STRING},
+      name: { type: Sequelize.STRING },
+      unit: { type: Sequelize.STRING },
+      tat: { type: Sequelize.STRING },
+      available: { type: Sequelize.BOOLEAN },
+      hasParticulars: {
+        type: Sequelize.BOOLEAN
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: new Date()
+      },
+      merchantId: {
+        type: Sequelize.INTEGER,
+        onDelete: 'cascade',
+        onUpdate: 'cascade'
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

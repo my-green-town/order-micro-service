@@ -14,6 +14,7 @@ RUN npm install
 
 # Bundle app source
 COPY . .
-ENV NODE_ENV=production
-EXPOSE 4343
+ARG environment=development
+ENV NODE_ENV=$environment
+EXPOSE 4003
 CMD ["node", "index.js" ]

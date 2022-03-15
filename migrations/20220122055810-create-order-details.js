@@ -27,6 +27,19 @@ module.exports = {
       unit:{
         type:Sequelize.STRING
       },
+      cloth:{
+        type:Sequelize.STRING
+      },
+      merchantServiceDetailId:{
+        type:Sequelize.INTEGER
+      },
+      hasParticulars:{
+        type:Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      serviceId:{
+        type:Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
