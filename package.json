@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon index.js ",
     "start-debug": "nodemon --inspect index.js",
-    "test": "mocha",
+    "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
@@ -42,7 +42,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "jest": "^27.3.1",
+    "jest": "^27.5.1",
     "sequelize-cli": "^6.2.0"
   }
 }
