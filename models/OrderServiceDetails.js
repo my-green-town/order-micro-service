@@ -47,7 +47,11 @@ module.exports = (sequelize, Sequelize) => {
         cloth: { type: Sequelize.STRING }, //shirt, pant, jeans
         unit: { type: Sequelize.STRING }, //kg, peice
         price: { type: Sequelize.INTEGER }, //(card|account)
-        discount: { type: Sequelize.INTEGER, defaultValue: 0 },
+        count: { type: Sequelize.INTEGER, defaultValue: 0 },
+        unit:{
+            type:   Sequelize.ENUM,
+            values: ['PER_KG', 'PER_ITEM']
+        },
         createdAt: {
             allowNull: false,
             type: Sequelize.DATE,

@@ -10,7 +10,7 @@ module.exports = (sequelize, Sequelize) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-        //define your association here
+      //define your association here
     }
   };
   OrderShipment.init({
@@ -20,16 +20,30 @@ module.exports = (sequelize, Sequelize) => {
       primaryKey: true,
       type: Sequelize.INTEGER
     },
-    status : { type: Sequelize.STRING},
+    status: {
+      type:Sequelize.ENUM,
+      values: [
+        'PICK_UP_PARTNER_WAIT',
+        'PICK_UP_PARTNER_ASSIGNED',
+        'PICK_UP_PARTNER_ARRIVED',
+        'PICK-UP_COMPLETE',
+        'DROP_AT_SHOP_COMPLETE',
+        'DELIVERY_PARTNER_WAIT',
+        'DELIVERY_PARTNER_ASSIGNED',
+        'OUT_FOR_DELIVERY',
+        'DELIVERY_COMPLETE'
+      ],
+      defaultValue: "PICK_UP_PARTNER_WAIT"
+    },
     /**
      * outForPickup | pickupComplete
      * outForDelivery | deliveryComplete
      */
-    paymentStatus:{type:Sequelize.BOOLEAN},
-    wishmasterId:{type:Sequelize.INTEGER},
-    cartId:{type:Sequelize.INTEGER},
-    orderId:{type:Sequelize.INTEGER},
-    deliveryTag:{type:Sequelize.INTEGER},
+    paymentStatus: { type: Sequelize.BOOLEAN },
+    wishmasterId: { type: Sequelize.INTEGER },
+    cartId: { type: Sequelize.INTEGER },
+    orderId: { type: Sequelize.INTEGER },
+    deliveryTag: { type: Sequelize.INTEGER },
     createdAt: {
       allowNull: false,
       type: Sequelize.DATE

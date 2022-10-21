@@ -1,10 +1,13 @@
 
-const db = require("../../../../models");
+const db = require("../../models");
 const { order } = require("../controllers/index.controller");
 const {Sequelize} = db.Sequelize;
 const { Op } = Sequelize;
 const {DeliveredOrders,OrderServiceDetails,Orders,OrderParticulars,OrderServices} = db;
-
+const cartUtil = require('../utilities/cart');
+const orderUtil = require('../utilities/order');
+const msgUtil = require('../utilities/messageQueue')
+const eventEmitter = require('../../src/event-emitters/');
 const getDeliveredOrder = async (req)=>{
     const {userId} = req; 
     try{
@@ -66,6 +69,7 @@ const singleParticlarRow = async (req)=>{
         next(err);
     }
 }
+
 const getOrderSummary = async (req)=>{
     const {orderId} = req; 
     let fetchServices = async()=>{
@@ -76,43 +80,10 @@ const getOrderSummary = async (req)=>{
             },
             include:{
                 model:OrderServices,
-                include:[{
-                        model:OrderParticulars,as:"particulars",
-                        include:{model:OrderServiceDetails, as:"serviceDetail"}
-                    },
-                    {model:db.OrderQuantities,as:"orderQuantities"}
-                ],
-                
+                include:[{model:OrderServiceDetails, as:"serviceDetail"}]
             }
         });
-        
-        let totalCost = 0;
-
-        orderSummary.OrderServices.forEach(element=>{
-            let eachServiceCost = 0 ;
-            if(element.orderQuantities.length>0){
-                //flat-price calculation like kg,pair
-                let cost = element.particulars[0].serviceDetail.price;
-                element.orderQuantities.forEach(item=>{
-                    let serviceCost = item.quantity*cost;
-                    totalCost+=serviceCost;
-                    item = {...item,cost:serviceCost};
-                    item;
-                });
-
-            }else{
-               
-                element.particulars.forEach(item => {
-                    let cost = item.count *(item.serviceDetail.price);
-                    item = {...item, cost:cost};
-                    totalCost+=cost;
-                    item;
-                    
-                });
-            }
-            element['serviceCost'] = 10000;
-        })
-        return {orderSummary,totalAmount:totalCost}
+        return orderSummary
     }
 
     try{
@@ -123,11 +94,50 @@ const getOrderSummary = async (req)=>{
     }
 }
 
+const fetchOrderSummary = async(req)=>{
+    try{
+        const latestOrder = await orderUtil.order.getLatest(req);
+        const servicesSelectedInOrder = await orderUtil.servicesSelected.findAll({orderId:latestOrder.dataValues.id})
+        return {payload:servicesSelectedInOrder}
+
+    }catch(err){
+        throw err
+    }
+}
+
+const placeOrder = async (req) => {
+    try{
+        const filledUserCart = await cartUtil.userCart.get(req.token);
+        const createdOrder = await orderUtil.order.create(req,filledUserCart.data);
+        await cartUtil.createACopyOfCart(req.token, filledUserCart.data.data, createdOrder);
+        await orderUtil.orderShipmentHandlers.push(createdOrder);
+        await msgUtil.queue.push(createdOrder, req.token)
+        await cartUtil.userCart.clear(req.token, filledUserCart.data.data[0].service.cartId);
+        return createdOrder;
+    }catch(error){
+        console.log("error is",error);
+        throw error;
+    }
+}
+
+updateOrderStatus = async (req) => {
+    try {
+        return  await Orders.update({where:{id:req.orderId}},{status:req.status})
+    } catch(err) {
+        throw new Error("Error in updating the order status")
+    }
+}
+
+
+
+
 
 
 module.exports = {
     getDeliveredOrder,
     orderParticulars,
     singleParticlarRow,
-    getOrderSummary
+    getOrderSummary,
+    placeOrder,
+    fetchOrderSummary
 }

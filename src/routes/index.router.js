@@ -1,19 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const OrderRoute = require('./order.route');
+const assignmentRoute = require('./assignment.route');
+const processingRoutes = require('./processing.route');
+const shipmentRoutes = require('./shipment.route')
 const jwt = require('jsonwebtoken');
 
 let routes  = (app)=>{
     console.log("came inside route function");
     // predicate the router with a check and bail out when needed
+    
     app.use('/api/order',router, OrderRoute);
+    app.use('/api/order/assignment',router, assignmentRoute);
+    app.use('/api/order/processing',router, processingRoutes);
+    app.use('/api/order/shipment',router, shipmentRoutes);
     app.use(handleError)
 }
 
 const handleError = (error,req,res,next)=>{
-    //console.log("error is",error.errorStack.message);
-    console.log("error stack  is",error.errorStack.stack);
-    res.json(error.err);
+    
+    res.json({status:"error",msg:error.message});
 }
 
 router.use((req,res,next)=>{
@@ -42,8 +48,10 @@ router.use((req,res,next)=>{
                     res.status(403).json({err})
                 } else {
                     if(decoded.data)
+                    console.log("token cheeck passsss");
                     req.userInfo = decoded.data;
                     next()
+
                 }
                 
             }

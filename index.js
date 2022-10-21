@@ -1,9 +1,7 @@
 const express = require('express');
 const app = express();
 const http = require('http');
-
 require('./config/index')();
-
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({
     extended: true
@@ -18,12 +16,14 @@ app.use(function(req, res, next) {
     next();
 });
 
+require('./src/event-emitters/order');
+
 app.use((req, res,next)=>{
     console.log("path is===>",req.path);
     next()
 })
 
-let productroutes = require('./src/modules/products/routes/index.router');
+let productroutes = require('./src/routes/index.router');
 productroutes(app);
 
 app.use(function(req,res){

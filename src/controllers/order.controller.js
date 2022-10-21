@@ -8,7 +8,7 @@
 
  const { request, response } = require('express');
  const mongoose = require('mongoose');
- const db = require("../../../../models");
+ const db = require("../../models");
  const {Sequelize} = db.Sequelize;
  const { Op } = Sequelize;
  const {Orders, OrderDetails, OrderServices, OrderShipment,OrderServiceDetails} = db;
@@ -18,154 +18,37 @@
  const { Query } = require('mongoose');
  const OrderUpdateSerivice = require('../services/orderUpdates');
  const OrderService = require('../services/order');
-
+ const CartService = require('../services/') 
+ 
 let test =(req, res)=>{
     res.send("test called in Cart, thanks for calling");
 }
 
 let createNewOrder = async (req, res, next)=>{
-    let getCart = async ()=>{
-        axiosObj.setConfig({app:'cart',token:req.token});
-        try{
-            return await axiosObj.getRequest('/cart/');
-        }catch(err){
-            throw new Error(err);
-        }           
-    }
-    let createOrder = async (cart) => {
-        let {userId} = req.userInfo;
-        let order = {
-            cartId: cart.data[0].service.cartId,
-            status:'confirmed',
-            userId: userId,
-            merchantName:cart.cartInfo.merchantName
-        };
-        try{
-            return await Orders.create(order);
-
-
-        }catch(error){
-            
-        }
-    }
-
-    let addServicesToOrder = async (cart,order)=>{
-        console.log("order",cart);
-        for(let i=0;i<cart.length;i++){
-            let eachService = cart[i].service;
-            let {serviceId} = eachService;
-            axiosObj.setConfig({app:'main',token:req.token});
-            let serviceRow = await axiosObj.getRequest('/merchant/service/details/'+serviceId);
-            console.log("service id",serviceRow.data);
-            let {MerchantServiceDetails,id,createdAt,updatedAt,...orderServiceRow} = serviceRow.data.payload;
-            orderServiceRow = {...orderServiceRow, orderId:order.id,cartId:cart[0].service.cartId};
-            
-            try{
-                let orderServiceId = await OrderServices.create(orderServiceRow);
-                let servicDetailPromises = MerchantServiceDetails.map(element=>{
-                    let {id,createdAt,updatedAt,serviceId,...serviceDetailRow} = element;
-                    serviceDetailRow = {...serviceDetailRow,serviceId:orderServiceId.id}
-
-                    return OrderServiceDetails.create(serviceDetailRow);
-
-                });
-                await Promise.all(servicDetailPromises);
-            }catch(err){
-                console.log("err is",err);
-                throw new Error(err);
-            }
-            
-        }
-    }
-
-
-
-    let addOrderToQueue = async(order)=>{
-        //pass the messga to order queue
-        let orderId = order.id;
-        axiosObj.setConfig({app:'msgQ',token:""});
-        axiosObj.postRequest('/push-order',{payload:{orderId:orderId}});
-    }
-
-    let cleanCart = async (cartDetails)=>{
-        const {id} = cartDetails.cartInfo;
-        axiosObj.setConfig({app:'cart',token:""});
-        let req = {
-            cartId:id,
-            tokenCheck:false
-        }
-        console.log("clean cart is", req);
-        try{
-            return await axiosObj.deleteRequest('/cart/delete',req);
-        }catch(err){
-            throw new Error(err);
-        }   
-        
-    }
 
     try{
-        let cart =  await getCart();
-        let order = await createOrder(cart.data);
-        order  = {...order.dataValues,...{orderId:order.id}};
-        let services = await addServicesToOrder(cart.data.data, order);
-        let addToQueueRes = await addOrderToQueue(order);
-        await cleanCart(cart.data);
-        res.json(order);
+        const placeOrderRes = await OrderService.placeOrder(req);
+        res.json({msg:"order placed successfully.",payload:placeOrderRes});
     }catch(err){
-        console.log("Error is",err);
-        next(err);
+        console.log("came here for catch")
+        next(err)
     }
-
-
 }
 
-let assignDeliveryPartner = async(req, res, next)=>{
-    console.log("came for assign paretner");
-    const {orderId, wishmasterId,deliveryTag} = req.body;
-    try{
-        let shipmentStatus = await  OrderShipment.findOne({where:{orderId:orderId}})
-        if(shipmentStatus){
-           await  OrderShipment.update({deliveryTag:deliveryTag, wishmasterId:req.wishmasterId, status:"pickupAssigned"},{where:{orderId:orderId}});
-        }else{
-            let tableRow = {
-                orderId:orderId,
-                wishmasterId:wishmasterId,
-                cartId:0,
-                status:"pickupAssigned",
-                deliveryTag:deliveryTag
-            }
-            await OrderShipment.create(tableRow);
-        }
-        let resObj = {
-            wishmasterId:wishmasterId
-        }
-        return res.status(200).json(resObj);
-    }
-    catch(error){
-        console.log("error is",error);
-        return next({err:{errMsg:"Not able to assign Order"},errorStack:error});
-    }
-   
-    
-    
-}
+
 
 let getAssignedOrder = async(req, res, next)=>{
     //query Order 
 
     const {userId} = req.userInfo;
-    let avaialbleStatus = [
-        'pickupAssigned',
-        'collectionDone',
-        'deliveryToShopStarted',
-    ]
+    
     const fetchOrder = async ()=>{
         let query = {
             where:{
                 wishmasterId:userId,
-                status:{[Op.in]:avaialbleStatus}
-                
+                status: {[Op.notIn]:['DROP_AT_SHOP_COMPLETE']}
             }
+          
         };
 
         try{
@@ -188,7 +71,6 @@ let getAssignedOrder = async(req, res, next)=>{
 let getOptedServices = async(req, res, next)=>{
     let fetchServices = async ()=>{
         const {orderId} = req.params;
-        console.log("order is",orderId);
         let query = {
             where:{
                 orderId:orderId
@@ -214,9 +96,7 @@ let getServiceAndParticulars = async(req, res)=>{
             where:{id:id},
             include:{model:OrderServiceDetails,as:"serviceDetail"}
         });
-        let serviceParticulars = await OrderService.orderParticulars({serviceId:id});
-
-        res.json({payload:{services:serviceRows,particulars:serviceParticulars}});
+        res.json({payload:{services:serviceRows}});
     }catch(err){
         console.log("error is",err);
     } 
@@ -299,82 +179,18 @@ let getOrderDetails = async(req, res, next)=>{
 
 }
 
-const getShipment = async (req, res, next) => {
-    const {orderId} = req.params;
-    try{
-        let shipmentRow = await OrderShipment.findOne({where:{orderId:orderId}});
-        res.json({shipment:shipmentRow});
 
-    }catch(err){
-        console.log("Error in getting the shipment details",err);
-    }
-    
-}
 
-const setDeliveryParnterAvailable = async  (req,status)=>{
-    const { userId } = req.userInfo;
-    const { orderId} = req.body;
-
-    const sendDeliveryAck = async ()=>{
-        let order = await OrderShipment.findOne({where:{orderId:orderId}});
-        axiosObj.setConfig({app:'msgQ',token:""});
-        
-        return await axiosObj.postRequest('/ack',{deliveryTag:order.deliveryTag});
-    }
-
-    const updateDeliveryCycle = async ()=>{
-        if(status == 'deliveryToShopDone'){
-            return OrderUpdateSerivice.updateDeliveryCycle({...req.userInfo, ...req.body});
-        }
-    }
-
-    if(status == 'deliveryToShopDone') {
-        await Promise.all([sendDeliveryAck(),updateDeliveryCycle()])
-        axiosObj.setConfig({app:'main',token:req.token});
-        let walletReq = {
-            amount:30,
-            userId:userId,
-            action:'add',
-            source:'swab Admin',
-            description:`Comission Order Id ~ ${orderId}`,
-            tokenCheck:false
-
-        }
-        let paymentDetails = await axiosObj.postRequest('/wallet/addToWallet',walletReq);
-        let {id} = paymentDetails.data.transaction;
-        console.log("tansc id",id);
-        await OrderUpdateSerivice.updateDeliveryPaymentId({orderId,id});
-        return await axiosObj.putRequest('/auth/user',{userId:userId});
-    }else{
-        return Promise.resolve({"msg":"Time has not come to ack"});
-    }
-
-}
-
-const updateShipment = async (req, res, next)=>{
-    const {orderId,status} = req.body;
-    let updateQuery = {
-        status:status
-    }
-    let whereQuery ={where:{orderId:orderId}};
-
-    try{
-        await OrderShipment.update(updateQuery,whereQuery);
-        await setDeliveryParnterAvailable(req,status);
-        res.json({msg:"Order updated Successfully"});
-    }catch(err){
-        console.log("error is",err);
-        next(err);
-    }
-}
 
 const fetchOrders = async (req, res,next)=>{
     let {userId} = req.userInfo;
     try{
-        let orders = await Orders.findAll({where:{
+        let orders = await Orders.findAll(
+                        {
+                        where:{
                             userId:userId,
-
                         },
+                        include:[OrderServices],
                         order:[['updatedAt','DESC']],
                         limit:10
         });
@@ -506,19 +322,45 @@ const getOrderSummary = async (req, res, next)=>{
 
 }
 
+const getLatestOrderSummary = async(req, res,next)=>{
+    try {
+        const ordersSummary = await OrderService.fetchOrderSummary(req)
+        return res.json(ordersSummary)
+    } catch (err) {
+        next(err)
+    }
+}
+
+const updateOrderStatus = async(req, res, next) => {
+    try {
+        const ordersSummary = await OrderService.fetchOrderSummary(req)
+        return res.json(ordersSummary)
+    } catch (err) {
+        next(err)
+    }
+}
+
+const servicesAndStatus = async(req, res,next) => {
+    try {
+        const orderServices = await OrderService.getServicesAndStatus(req)
+
+        return res.json(ordersSummary)
+    } catch (err) {
+        next(err)
+    }
+}
+    
+
 module.exports = {
     test,
     createNewOrder,
-    assignDeliveryPartner,
     getAssignedOrder,
     getOptedServices,
     addOrderDetails,
     updateOrderDetails,
     deleteOrderParticular,
     getOrderDetails,
-    getShipment,
     addShipment,
-    updateShipment,
     deleteShipment,
     fetchOrders,
     updateDeliveryTag,
@@ -528,8 +370,9 @@ module.exports = {
     getServiceParticulars,
     getParticularsInOrder,
     insertOrderQuantity,
-    getOrderSummary
-
+    getOrderSummary,
+    getLatestOrderSummary,
+    servicesAndStatus
 }
 
 

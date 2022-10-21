@@ -8,15 +8,26 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      status : { type: Sequelize.STRING},
+      status : { 
+        type:Sequelize.ENUM,
+        values: ['PLACED', 'PICKED_UP', 'UNDER_WASH',
+          'OUT_FOR_DELIVERY', 'DELIVERED','CANCELLED'
+        ],
+        defaultValue: "PLACED"
+      },
       expectedPickupTime: { type: Sequelize.STRING},
       actulaPickupTime:{type: Sequelize.STRING},
       expectedDeliveryTime:{type:Sequelize.STRING},
       actualDeliveryTime:{type:Sequelize.STRING},
-      paymentStatus:{type:Sequelize.BOOLEAN},
+      paymentStatus:{
+        type:Sequelize.ENUM,
+        values: ['PAID', 'PENDING', 'NOT_PAID'],
+        defaultValue: "NOT_PAID"
+      },
       merchantName: { type: Sequelize.STRING },
       userId:{type:Sequelize.INTEGER},
       cartId:{type:Sequelize.INTEGER},
+      addressId: { type: Sequelize.INTEGER },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

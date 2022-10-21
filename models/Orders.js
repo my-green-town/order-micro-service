@@ -11,8 +11,8 @@ module.exports = (sequelize, Sequelize) => {
          */
         static associate(models) {
             // define association here
-            Orders.hasMany(models.DeliveredOrders,{foreignKey:'orderId'});
-            Orders.hasMany(models.OrderServices,{foreignKey:'orderId'});
+            Orders.hasMany(models.DeliveredOrders, { foreignKey: 'orderId' });
+            Orders.hasMany(models.OrderServices, { foreignKey: 'orderId' });
 
         }
     };
@@ -23,7 +23,14 @@ module.exports = (sequelize, Sequelize) => {
             primaryKey: true,
             type: Sequelize.INTEGER
         },
-        status: { type: Sequelize.STRING },
+        status: {
+            type:Sequelize.ENUM,
+            values: ['PLACED', 'PICKED_UP', 'UNDER_WASH',
+            'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'
+            ],
+            defaultValue: "PLACED"
+               
+        },
         expectedPickupTime: { type: Sequelize.STRING },
         actulaPickupTime: { type: Sequelize.STRING },
         expectedDeliveryTime: { type: Sequelize.STRING },
@@ -32,6 +39,7 @@ module.exports = (sequelize, Sequelize) => {
         merchantName: { type: Sequelize.STRING },
         userId: { type: Sequelize.INTEGER },
         cartId: { type: Sequelize.INTEGER },
+        addressId: { type: Sequelize.INTEGER },
         createdAt: {
             allowNull: false,
             type: Sequelize.DATE
