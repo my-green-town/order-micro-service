@@ -1,4 +1,5 @@
 const config = {
-  verbose: true
+  verbose: true,
+  collectCoverage:true
 };
 module.exports = config;
