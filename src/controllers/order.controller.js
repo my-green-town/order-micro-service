@@ -30,7 +30,7 @@ let createNewOrder = async (req, res, next)=>{
         const placeOrderRes = await OrderService.placeOrder(req);
         res.json({msg:"order placed successfully.",payload:placeOrderRes});
     }catch(err){
-        console.log("came here for catch")
+        console.log("came here for catch",err)
         next(err)
     }
 }
@@ -48,22 +48,20 @@ let getAssignedOrder = async(req, res, next)=>{
                 wishmasterId:userId,
                 status: {[Op.notIn]:['DROP_AT_SHOP_COMPLETE']}
             }
-          
         };
-
-        try{
-            let orderRes = await OrderShipment.findAll(query);
-            res.json({data:orderRes})
-        }catch(err){
-            console.log("Error is",err);
-            Promise.reject("Not able to get assigned Order");
-        }
+        return OrderShipment.findAll(query);    
     }
     
-
     try{
-        await fetchOrder();
+        const result = await fetchOrder();
+        if(result.length>0) {
+            res.json({data:result})
+        } else {
+            res.status(404).json({msg:"No order Found"})
+        }
+        
     }catch(err){
+        console.log("error is",err)
         next(err);
     }
 }
@@ -90,14 +88,14 @@ let getOptedServices = async(req, res, next)=>{
 
 let getServiceAndParticulars = async(req, res)=>{
     let {id} = req.params;
-    try{
+    try {
 
         let serviceRows = await OrderServices.findOne({
             where:{id:id},
             include:{model:OrderServiceDetails,as:"serviceDetail"}
         });
         res.json({payload:{services:serviceRows}});
-    }catch(err){
+    } catch(err) {
         console.log("error is",err);
     } 
 }
@@ -331,14 +329,6 @@ const getLatestOrderSummary = async(req, res,next)=>{
     }
 }
 
-const updateOrderStatus = async(req, res, next) => {
-    try {
-        const ordersSummary = await OrderService.fetchOrderSummary(req)
-        return res.json(ordersSummary)
-    } catch (err) {
-        next(err)
-    }
-}
 
 const servicesAndStatus = async(req, res,next) => {
     try {

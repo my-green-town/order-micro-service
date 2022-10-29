@@ -16,9 +16,7 @@ const order = {
         };
         try{
             return await Orders.create(order);
-        
         }catch(error){
-            console.error("Error is",error);
             let errObj =  new Error("Error in creating the order");
             errObj.status = 400;
             throw errObj;
@@ -46,7 +44,7 @@ const orderShipmentHandlers = {
             const tableRow = {orderId:order.id}
             return await OrderShipment.create(tableRow)
         }catch(err){
-            throw err;
+            throw new Error("Not able to push order to shipment");
         }
     },
     getOrderHavingDeliveryPatnerAssigned:async function(){
@@ -59,7 +57,6 @@ const orderShipmentHandlers = {
 
 const servicesSelected = {
     findAll:async function({orderId}){
-        console.log("orderid",orderId)
         return await OrderServices.findAll({attributes:['name'],where:{orderId:orderId}})
     }
 }

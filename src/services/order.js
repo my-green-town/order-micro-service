@@ -111,7 +111,7 @@ const placeOrder = async (req) => {
         const createdOrder = await orderUtil.order.create(req,filledUserCart.data);
         await cartUtil.createACopyOfCart(req.token, filledUserCart.data.data, createdOrder);
         await orderUtil.orderShipmentHandlers.push(createdOrder);
-        await msgUtil.queue.push(createdOrder, req.token)
+        await msgUtil.queue.push(createdOrder, req.token);
         await cartUtil.userCart.clear(req.token, filledUserCart.data.data[0].service.cartId);
         return createdOrder;
     }catch(error){

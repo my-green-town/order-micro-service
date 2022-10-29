@@ -18,7 +18,6 @@ let routes  = (app)=>{
 }
 
 const handleError = (error,req,res,next)=>{
-    
     res.json({status:"error",msg:error.message});
 }
 

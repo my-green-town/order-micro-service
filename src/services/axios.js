@@ -34,12 +34,10 @@ const deleteRequest = (url,data)=>{
     return axiosObj.delete(url,{data:data});
 }
 
-const setConfig = ({app,token})=>{
-    console.log("token is",token);
+const setConfig = ({app,token}) => {
     if(token) {
         setBearerToken(token);
     }
-    
     axiosObj.defaults.baseURL = setup[app]['URL'];
 }
 
