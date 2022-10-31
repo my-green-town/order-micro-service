@@ -29,9 +29,9 @@ jobs:
         password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
     - name: Build Docker Image
       uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: Order:latest 
+      with:
+        push: true
+        tags: Order:latest 
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
