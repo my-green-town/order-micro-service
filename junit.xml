@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="18" failures="0" errors="0" time="1.5">
+  <testsuite name="Testing order processing utility" errors="0" failures="0" skipped="0" timestamp="2022-10-31T09:51:19" time="0.955" tests="6">
+    <testcase classname="Testing order processing utility check for order is created successfully" name="Testing order processing utility check for order is created successfully" time="0.003">
+    </testcase>
+    <testcase classname="Testing order processing utility Create order Fails and throws Error" name="Testing order processing utility Create order Fails and throws Error" time="0.001">
+    </testcase>
+    <testcase classname="Testing order processing utility Get latest order successfully" name="Testing order processing utility Get latest order successfully" time="0.001">
+    </testcase>
+    <testcase classname="Testing order processing utility Get latest order successfully" name="Testing order processing utility Get latest order successfully" time="0.001">
+    </testcase>
+    <testcase classname="Testing order processing utility Order is pushed to shipment table after placed" name="Testing order processing utility Order is pushed to shipment table after placed" time="0">
+    </testcase>
+    <testcase classname="Testing order processing utility Order is not pushed to shipment and thows Error" name="Testing order processing utility Order is not pushed to shipment and thows Error" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Shipment Util Test Suit starts here" errors="0" failures="0" skipped="0" timestamp="2022-10-31T09:51:19" time="0.977" tests="4">
+    <testcase classname="Shipment Util Test Suit starts here update shipment status" name="Shipment Util Test Suit starts here update shipment status" time="0.002">
+    </testcase>
+    <testcase classname="Shipment Util Test Suit starts here update shipment status Fails with Error" name="Shipment Util Test Suit starts here update shipment status Fails with Error" time="0">
+    </testcase>
+    <testcase classname="Shipment Util Test Suit starts here Fetch shipment Order " name="Shipment Util Test Suit starts here Fetch shipment Order " time="0.001">
+    </testcase>
+    <testcase classname="Shipment Util Test Suit starts here Fetch shipment Order Fails with an Error" name="Shipment Util Test Suit starts here Fetch shipment Order Fails with an Error" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Testing order controller file" errors="0" failures="0" skipped="0" timestamp="2022-10-31T09:51:19" time="0.982" tests="3">
+    <testcase classname="Testing order controller file Fetch User cart added Items" name="Testing order controller file Fetch User cart added Items" time="0.001">
+    </testcase>
+    <testcase classname="Testing order controller file Error in getting the User Cart" name="Testing order controller file Error in getting the User Cart" time="0.001">
+    </testcase>
+    <testcase classname="Testing order controller file Create Service and service details snapshot for placed order" name="Testing order controller file Create Service and service details snapshot for placed order" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Testing order controller file" errors="0" failures="0" skipped="0" timestamp="2022-10-31T09:51:19" time="1.193" tests="5">
+    <testcase classname="Testing order controller file check new order creation function" name="Testing order controller file check new order creation function" time="0.002">
+    </testcase>
+    <testcase classname="Testing order controller file Get Order Assingned to WishMaster Successfully" name="Testing order controller file Get Order Assingned to WishMaster Successfully" time="0.001">
+    </testcase>
+    <testcase classname="Testing order controller file Get Order Assingned to WishMaster with No Order" name="Testing order controller file Get Order Assingned to WishMaster with No Order" time="0">
+    </testcase>
+    <testcase classname="Testing order controller file Get Order Assingned fetch order Fails" name="Testing order controller file Get Order Assingned fetch order Fails" time="0.034">
+    </testcase>
+    <testcase classname="Testing order controller file Check for opted services by customer when collection clothes" name="Testing order controller file Check for opted services by customer when collection clothes" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>
