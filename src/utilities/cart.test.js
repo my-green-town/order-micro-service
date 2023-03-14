@@ -55,7 +55,7 @@ describe('Testing order controller file', () => {
             id:123
         }
         const result = await cartUtil.createACopyOfCart(token,cart, order);
-        expect(result).toBe('Services and service details captured');
+        expect(result).toBe('Services and service details captured.');
     })
 })
 
