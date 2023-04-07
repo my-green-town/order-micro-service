@@ -58,9 +58,15 @@ const setDeliveryParnterAvailable = async  (req,status)=>{
 
 const updateShipmentStatus = async(req, res) => {
     try {
-        await shipmentService.shipment.updateStatus(req.body)
+        const {status} = req.body
+        await shipmentService.shipment.updateStatus(req.body);
+        if(status === 'PICKUP_COMPLETE') {
+            //make wishmaster available
+            await shipmentService.updateWishMaster(req.body);
+        }
         return res.json({msg:"Shipment status updated"})
     } catch(err) {
+        console.log("error is",err);
         throw err
     }
 }

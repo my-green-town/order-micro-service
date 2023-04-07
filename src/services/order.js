@@ -97,9 +97,14 @@ const getOrderSummary = async (req)=>{
 const fetchOrderSummary = async(req)=>{
     try{
         const latestOrder = await orderUtil.order.getLatest(req);
-        const servicesSelectedInOrder = await orderUtil.servicesSelected.findAll({orderId:latestOrder.dataValues.id})
-        return {payload:servicesSelectedInOrder}
 
+        const services = await orderUtil.servicesSelected.findAll({orderId:latestOrder.dataValues.id})
+        return {
+            payload:{
+                orderId:latestOrder.dataValues.id,
+                services:services
+            }
+        }
     }catch(err){
         throw err
     }
@@ -111,7 +116,6 @@ const placeOrder = async (req) => {
         const createdOrder = await orderUtil.order.create(req,filledUserCart.data);
         await cartUtil.createACopyOfCart(req.token, filledUserCart.data.data, createdOrder);
         await orderUtil.orderShipmentHandlers.push(createdOrder);
-        await msgUtil.queue.push(createdOrder, req.token);
         await cartUtil.userCart.clear(req.token, filledUserCart.data.data[0].service.cartId);
         return createdOrder;
     }catch(error){

@@ -15,12 +15,24 @@ const intialPushToOrderMsgQueue = async (req, res,next)=>{
 
 const assignManual = async (req, res, next)=>{
     try {
-        await assigmentService.manual.assign(req.body);
+        const response = await assigmentService.manual.assign(req.body);
         return res.json({msg:"Order assigned successfully"})
     } catch(err) {
         next(err)
     }
 }
+
+const autoAssign = async (req, res, next) => {
+
+    try {
+        const response = await assigmentService.autoAssign.assign(req.body);
+        return res.json(response)
+    } catch(err) {
+        next(err)
+    }
+}
+
+
 const check  = async (req, res, next)=>{
     try{
         res.json("check inside assigmet called");
@@ -32,5 +44,6 @@ const check  = async (req, res, next)=>{
 module.exports = {
     intialPushToOrderMsgQueue,
     assignManual,
-    check
+    check,
+    autoAssign
 }

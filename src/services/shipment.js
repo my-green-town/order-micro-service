@@ -3,6 +3,7 @@ const db = require('../../models')
 const orderUtilites = require('../utilities/order')
 const shipmentUtils = require('../utilities/shipment')
 const messageQueueUtils = require('../utilities/messageQueue');
+const { order } = require('../controllers/index.controller');
 const { OrderServiceDetails } = db 
 
 const UPDATE_STATUS  = {
@@ -33,39 +34,56 @@ const pushToPickupQueue = ()=>{
 
 const shipment = {
     getStatus : async (orderId) => {
-        try{
+        try {
             return db.OrderShipment.findOne({ attributes:['status','wishmasterId','deliveryTag','orderId'] ,where :{orderId:orderId}})
         }catch(err){
             throw new Error("Not able to fetch order status");
         }
     },
     updateStatus:async ({status,orderId}) => {
-        let whereQuery = {where:{orderId:orderId}};
-        let updateQuery = {status:status}
-
+        const {wishmasterId} = await db.OrderShipment.findOne({where:{orderId:orderId},order:[['createdAt','DESC']]})
+        let row = {orderId:orderId, status:"",wishmasterId:wishmasterId};
         try {
 
-            if(status == 'DROP_AT_SHOP_COMPLETE') {
-                //ack the message queue
-                const updatedOrderShipment = await shipmentUtils.shipment.getsingleOrder({orderId:orderId});
-                console.log("shipment details",updatedOrderShipment.status);
-                await messageQueueUtils.queue.ackDelivery({
-                    status:status,
-                    orderId:orderId,
-                    userId:updatedOrderShipment.wishmasterId,
-                    deliveryTag:updatedOrderShipment.deliveryTag
-                })
+            switch(status) {
+                case 0: {
+                    row.status = 'PICKUP_ASSIGNED';
+                    break;
+                }
+                case 'PICKUP_ARRIVED':{
+                    row.status = 'PICKUP_ARRIVED';
+                    break;
+                }
+                case 'PICKUP_COLLECTED': {
+                    row.status = 'PICKUP_COLLECTED';
+                    break;
+                }
+                case 'PICKUP_COMPLETE':{
+                    row.status = 'PICKUP_COMPLETE';
+                    break;
+                }
+                case 'DROP_ASSIGNED': {
+                    row.status = 'DROP_ASSIGNED';
+                    break;
+                }
+                case 'DROP_ARRIVED':{
+                    row.status = 'DROP_ARRIVED';
+                    break;
+                }
+                case 'DROP_COLLECTED': {
+                    row.status = 'DROP_COLLECTED';
+                    break;
+                }
+                case 'DROP_COMPLETE':{
+                    row.status = 'DROP_COMPLETE';
+                    break;
+                }
+                default:{
+                    row.status = 'UNKNOWN_STATUS';
+                }
             }
-
-            const shipmentUpdateRes = await db.OrderShipment.update(updateQuery,whereQuery);
-            const req = {
-                status:status,
-                orderId:orderId
-            }
-            await orderUtilites.order.updateStatus(req);
-
-            
-            return shipmentUpdateRes;
+            return await db.OrderShipment.create(row);    
+           
         }catch(err){
             console.log("error is",err);
             throw err;
@@ -91,8 +109,19 @@ const shipment = {
     }
 }
 
+updateWishMaster = async (input)=>{
+
+    try{
+        return await shipmentUtils.user.update(input)
+    }catch(err){
+        console.log("error in updating the user",err);
+    }
+   
+}
+
 module.exports = {  
     updateDeliveryTags,
     pushToPickupQueue,
-    shipment
+    shipment,
+    updateWishMaster
 }

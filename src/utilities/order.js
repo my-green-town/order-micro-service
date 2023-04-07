@@ -42,6 +42,7 @@ const orderShipmentHandlers = {
     push: async function (order){
         try{
             const tableRow = {orderId:order.id}
+            console.log("orderShipmentHandlers push function")
             return await OrderShipment.create(tableRow)
         }catch(err){
             throw new Error("Not able to push order to shipment");

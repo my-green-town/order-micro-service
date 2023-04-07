@@ -3,7 +3,8 @@ const router = express.Router();
 const OrderRoute = require('./order.route');
 const assignmentRoute = require('./assignment.route');
 const processingRoutes = require('./processing.route');
-const shipmentRoutes = require('./shipment.route')
+const shipmentRoutes = require('./shipment.route');
+const axiosService = require('../services/axios');
 const jwt = require('jsonwebtoken');
 
 let routes  = (app)=>{
@@ -48,6 +49,7 @@ router.use((req,res,next)=>{
                 } else {
                     if(decoded.data)
                     console.log("token cheeck passsss");
+                    axiosService.setBearerToken(req.token)
                     req.userInfo = decoded.data;
                     next()
 

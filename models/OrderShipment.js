@@ -20,20 +20,24 @@ module.exports = (sequelize, Sequelize) => {
       primaryKey: true,
       type: Sequelize.INTEGER
     },
+    // status: {
+    //   type:Sequelize.ENUM,
+    //   values: [
+    //     'PICK_UP_PARTNER_WAIT',
+    //     'PICK_UP_PARTNER_ASSIGNED',
+    //     'PICK_UP_PARTNER_ARRIVED',
+    //     'PICK-UP_COMPLETE',
+    //     'DROP_AT_SHOP_COMPLETE',
+    //     'DELIVERY_PARTNER_WAIT',
+    //     'DELIVERY_PARTNER_ASSIGNED',
+    //     'OUT_FOR_DELIVERY',
+    //     'DELIVERY_COMPLETE'
+    //   ],
+    //   defaultValue: "PICK_UP_PARTNER_WAIT"
+    // },
     status: {
-      type:Sequelize.ENUM,
-      values: [
-        'PICK_UP_PARTNER_WAIT',
-        'PICK_UP_PARTNER_ASSIGNED',
-        'PICK_UP_PARTNER_ARRIVED',
-        'PICK-UP_COMPLETE',
-        'DROP_AT_SHOP_COMPLETE',
-        'DELIVERY_PARTNER_WAIT',
-        'DELIVERY_PARTNER_ASSIGNED',
-        'OUT_FOR_DELIVERY',
-        'DELIVERY_COMPLETE'
-      ],
-      defaultValue: "PICK_UP_PARTNER_WAIT"
+      type:Sequelize.STRING,
+      defaultValue: "NONE"
     },
     /**
      * outForPickup | pickupComplete

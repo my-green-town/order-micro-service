@@ -29,11 +29,34 @@ const shipment = {
         } catch(err) {
             throw new Error("Error in getting order shipment details")
         }
+    },
+    updateDeliveryPartner: async ({orderId,partnerId})=>{
+        try {
+            return  OrderShipment.create({where:{orderId:orderId}},{wishmasterId:partnerId});
+        } catch (err) {
+            throw new Error("Error in updating the delivery partner.")
+        }
+    },
+    create:async (row) => {
+        try {
+            await OrderShipment.create(row);
+        } catch (err) {
+            throw new Error("Error in shipment push")
+        }
+
     } 
+}
+const user = { 
+    update:  async ({id,status})=>{
+        axiosService.setConfig({app:"main"})
+        let response = await axiosService.postRequest('/user/wishmaster-status',{userId:id,isAvailable: status})
+        return response;
+    }
 }
 
 
 module.exports = {
     pickupQueue,
-    shipment
+    shipment,
+    user
 }

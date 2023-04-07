@@ -45,16 +45,19 @@ let getAssignedOrder = async(req, res, next)=>{
     const fetchOrder = async ()=>{
         let query = {
             where:{
-                wishmasterId:userId,
-                status: {[Op.notIn]:['DROP_AT_SHOP_COMPLETE']}
-            }
+                wishmasterId:userId
+                
+            },
+            order: [
+                ['createdAt', 'DESC']
+            ],
         };
-        return OrderShipment.findAll(query);    
+        return OrderShipment.findOne(query);    
     }
     
     try{
         const result = await fetchOrder();
-        if(result.length>0) {
+        if(result) {
             res.json({data:result})
         } else {
             res.status(404).json({msg:"No order Found"})
